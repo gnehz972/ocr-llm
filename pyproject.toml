@@ -1,0 +1,26 @@
+[project]
+name = "ocr-llm"
+version = "0.1.0"
+description = "Add your description here"
+requires-python = ">=3.11"
+dependencies = [
+    "accelerate>=1.8.1",
+    "google-generativeai",
+    "huggingface-hub>=0.33.2",
+    "ollama>=0.5.1",
+    "onnxruntime>=1.22.0",
+    "pillow>=11.3.0",
+    "python-dotenv>=1.1.1",
+    "qwen-vl-utils>=0.0.11",
+    "requests>=2.32.4",
+    #    "torch>=2.0.0",
+    #    "transformers>=4.37.0",
+    #    "qwen-vl-utils",
+    #    "Pillow>=9.0.0",
+    #    "accelerate>=0.20.0",
+    "torch>=2.7.1",
+    "torchvision>=0.22.1",
+    "transformers>=4.53.0",
+    "sentencepiece>=0.1.99",
+    "bitsandbytes>=0.43.1; sys_platform != 'darwin'",
+]
