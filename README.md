@@ -1,6 +1,6 @@
-# OCR-LLM: Advanced Image Text Extraction
+# OCR-LLM: Image Text Extraction Scripts
 
-Extract text tales from images using LLM models([stepfun-ai/GOT-OCR-2.0-hf](https://huggingface.co/stepfun-ai/GOT-OCR-2.0-hf)) or LLM API(Gemini).
+Extract text tables from images using LLM models([stepfun-ai/GOT-OCR-2.0-hf](https://huggingface.co/stepfun-ai/GOT-OCR-2.0-hf)) or LLM API(gemini-2.0-flash-exp).
 
 ## Quick Start
 
@@ -17,13 +17,13 @@ cp .env.example .env
 # Edit .env and add your GEMINI_API_KEY=your_api_key_here
 
 # OCR with local LLM model GOT-OCR-2.0
-python got_ocr_2_0.py --image document.jpg --output result.txt
+python got_ocr_2_0.py --image ./download_images_test/20250625184111_2608.jpg --output result.md
 
 # OCR Using Gemini API
-python gemini_batch_ocr.py --image document.jpg --output result.txt
+python gemini_batch_ocr.py --image ./download_images_test/20250625184111_2608.jpg --output result.md
 
 # Process entire directory
-python got_ocr_2_0.py --di  vc b nrectory ./images --output merged_tables.txt
+python got_ocr_2_0.py --directory ./download_images_test --output result.md
 ```
 
 ## Environment
