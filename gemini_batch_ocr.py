@@ -17,15 +17,15 @@ from dotenv import load_dotenv
 load_dotenv()
 
 class GeminiBatchOCR:
-    def __init__(self, api_key=None):
+    def __init__(self, api_key=None, model_name='gemini-2.0-flash-exp'):
         """Initialize Gemini API client"""
         api_key = api_key or os.getenv('GEMINI_API_KEY')
         if not api_key:
             raise ValueError("Please provide Gemini API key via --api-key or GEMINI_API_KEY environment variable")
         
-        # Use Gemini 2.0 Flash model with new SDK
+        # Use specified Gemini model with new SDK
         self.client = genai.Client(api_key=api_key)
-        self.model_name = 'gemini-2.0-flash-exp'
+        self.model_name = model_name
         
     def process_single_image(self, image_path, prompt="Extract all text from this image, do not add any additional text"):
         """Process a single image with OCR"""
@@ -188,6 +188,8 @@ def main():
     parser.add_argument('--delay', type=float, default=1.0, 
                        help='Delay between API calls (seconds)')
     parser.add_argument('--directory', '-d', help='Process all images in directory')
+    parser.add_argument('--model-name', default='gemini-2.0-flash-exp',
+                       help='Gemini model name to use (default: gemini-2.0-flash-exp)')
     
     args = parser.parse_args()
     
@@ -212,7 +214,7 @@ def main():
     
     # Initialize OCR processor
     try:
-        ocr = GeminiBatchOCR(args.api_key)
+        ocr = GeminiBatchOCR(args.api_key, args.model_name)
     except ValueError as e:
         print(f"Error: {e}")
         sys.exit(1)
