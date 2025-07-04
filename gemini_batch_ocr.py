@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Batch OCR using Google Gemini 2.0 Flash API
+Batch OCR using Google Gemini 2.0 Flash API with Google Gen AI SDK
 """
 
-import google.generativeai as genai
+from google import genai
 import os
 import argparse
 import json
@@ -19,15 +19,13 @@ load_dotenv()
 class GeminiBatchOCR:
     def __init__(self, api_key=None):
         """Initialize Gemini API client"""
-        if api_key:
-            genai.configure(api_key=api_key)
-        elif os.getenv('GEMINI_API_KEY'):
-            genai.configure(api_key=os.getenv('GEMINI_API_KEY'))
-        else:
+        api_key = api_key or os.getenv('GEMINI_API_KEY')
+        if not api_key:
             raise ValueError("Please provide Gemini API key via --api-key or GEMINI_API_KEY environment variable")
         
-        # Use Gemini 2.0 Flash model
-        self.model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        # Use Gemini 2.0 Flash model with new SDK
+        self.client = genai.Client(api_key=api_key)
+        self.model_name = 'gemini-2.0-flash-exp'
         
     def process_single_image(self, image_path, prompt="Extract all text from this image, do not add any additional text"):
         """Process a single image with OCR"""
@@ -39,8 +37,11 @@ class GeminiBatchOCR:
             if image.mode != 'RGB':
                 image = image.convert('RGB')
             
-            # Generate content
-            response = self.model.generate_content([prompt, image])
+            # Generate content using new SDK
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=[prompt, image]
+            )
             
             return {
                 'image_path': str(image_path),
@@ -178,7 +179,7 @@ def find_image_files(directory):
     return sorted(image_files)
 
 def main():
-    parser = argparse.ArgumentParser(description='Batch OCR using Gemini 2.0 Flash API')
+    parser = argparse.ArgumentParser(description='Batch OCR using Gemini 2.0 Flash API with Google Gen AI SDK')
     parser.add_argument('images', nargs='*', help='Image file paths or directory')
     parser.add_argument('--api-key', help='Gemini API key (or set GEMINI_API_KEY env var)')
     parser.add_argument('--prompt', default='Extract structured text from this image and return it in markdown format, do not add any additional text',
