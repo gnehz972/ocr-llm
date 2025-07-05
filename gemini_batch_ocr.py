@@ -81,12 +81,12 @@ class GeminiBatchOCR:
         
         return results
     
-    def save_results(self, results, output_file):
+    def save_results(self, results, output_file, raw_response=False):
         """Save results to file"""
         if output_file.endswith('.json'):
             with open(output_file, 'w', encoding='utf-8') as f:
                 json.dump(results, f, indent=2, ensure_ascii=False)
-        elif output_file.endswith('.md'):
+        elif output_file.endswith('.md') and not raw_response:
             self.save_markdown_table(results, output_file)
         else:
             with open(output_file, 'w', encoding='utf-8') as f:
@@ -190,6 +190,8 @@ def main():
     parser.add_argument('--directory', '-d', help='Process all images in directory')
     parser.add_argument('--model-name', default='gemini-2.0-flash-exp',
                        help='Gemini model name to use (default: gemini-2.0-flash-exp)')
+    parser.add_argument('--raw-response', action='store_true',
+                       help='Output raw response without processing')
     
     args = parser.parse_args()
     
@@ -224,7 +226,7 @@ def main():
     
     # Save results
     if args.output:
-        ocr.save_results(results, args.output)
+        ocr.save_results(results, args.output, args.raw_response)
     else:
         # Print results to console
         for result in results:

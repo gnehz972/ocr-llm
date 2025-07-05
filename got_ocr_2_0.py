@@ -276,6 +276,8 @@ def main():
     parser.add_argument("--output", type=str, help="Output text file for results")
     parser.add_argument("--model", type=str, default="stepfun-ai/GOT-OCR-2.0-hf", 
                        help="Model name/path")
+    parser.add_argument("--raw-response", action="store_true", 
+                       help="Output raw response without processing")
     
     args = parser.parse_args()
     
@@ -325,10 +327,13 @@ def main():
             print("=" * 80)
             
             if args.output:
-                # Convert LaTeX table to Markdown if present
-                markdown_result = ocr.convert_latex_to_markdown_table(result)
+                # Convert LaTeX table to Markdown if present unless raw response is requested
+                if args.raw_response:
+                    output_result = result
+                else:
+                    output_result = ocr.convert_latex_to_markdown_table(result)
                 with open(args.output, 'w', encoding='utf-8') as f:
-                    f.write(markdown_result)
+                    f.write(output_result)
                 print(f"Results saved to: {args.output}")
                 
         except Exception as e:
@@ -355,49 +360,57 @@ def main():
         # Save results if output file specified
         if args.output:
             with open(args.output, 'w', encoding='utf-8') as f:
-                merged_tables = []
-                regular_text = []
-                
-                for result in results:
-                    if result['status'] == 'success':
-                        text = result['extracted_text']
-                        # Check if this is a LaTeX table
-                        if '\\begin{tabular}' in text and '\\end{tabular}' in text:
-                            # Extract table content between \begin{tabular} and \end{tabular}
-                            start_idx = text.find('\\begin{tabular}')
-                            end_idx = text.find('\\end{tabular}') + len('\\end{tabular}')
-                            table_content = text[start_idx:end_idx]
-                            
-                            # Extract just the table rows (between \hline entries)
-                            lines = table_content.split('\n')
-                            table_rows = []
-                            for line in lines:
-                                if line.strip() and not line.startswith('\\begin{tabular}') and not line.startswith('\\end{tabular}') and line.strip() != '\\hline':
-                                    if '&' in line:  # Only include actual data rows
-                                        table_rows.append(line.strip())
-                            
-                            merged_tables.extend(table_rows)
-                        else:
-                            # Regular text, add to regular text list
-                            regular_text.append(text)
-                
-                # Write regular text first
-                for text in regular_text:
-                    f.write(text)
-                    f.write("\n")
-                
-                # Convert and write merged table if we have table data
-                if merged_tables:
-                    # Create LaTeX table string for conversion
-                    latex_table = "\\begin{tabular}{|c|c|c|}\n\\hline\n"
-                    for row in merged_tables:
-                        latex_table += row + "\n"
-                    latex_table += "\\hline\n\\end{tabular}"
+                if args.raw_response:
+                    # Raw response mode - just write extracted text directly
+                    for result in results:
+                        if result['status'] == 'success':
+                            f.write(result['extracted_text'])
+                            f.write("\n\n")
+                else:
+                    # Normal processing mode
+                    merged_tables = []
+                    regular_text = []
                     
-                    # Convert to Markdown table
-                    markdown_table = ocr.convert_latex_to_markdown_table(latex_table)
-                    f.write(markdown_table)
-                    f.write("\n")
+                    for result in results:
+                        if result['status'] == 'success':
+                            text = result['extracted_text']
+                            # Check if this is a LaTeX table
+                            if '\\begin{tabular}' in text and '\\end{tabular}' in text:
+                                # Extract table content between \begin{tabular} and \end{tabular}
+                                start_idx = text.find('\\begin{tabular}')
+                                end_idx = text.find('\\end{tabular}') + len('\\end{tabular}')
+                                table_content = text[start_idx:end_idx]
+                                
+                                # Extract just the table rows (between \hline entries)
+                                lines = table_content.split('\n')
+                                table_rows = []
+                                for line in lines:
+                                    if line.strip() and not line.startswith('\\begin{tabular}') and not line.startswith('\\end{tabular}') and line.strip() != '\\hline':
+                                        if '&' in line:  # Only include actual data rows
+                                            table_rows.append(line.strip())
+                                
+                                merged_tables.extend(table_rows)
+                            else:
+                                # Regular text, add to regular text list
+                                regular_text.append(text)
+                    
+                    # Write regular text first
+                    for text in regular_text:
+                        f.write(text)
+                        f.write("\n")
+                    
+                    # Convert and write merged table if we have table data
+                    if merged_tables:
+                        # Create LaTeX table string for conversion
+                        latex_table = "\\begin{tabular}{|c|c|c|}\n\\hline\n"
+                        for row in merged_tables:
+                            latex_table += row + "\n"
+                        latex_table += "\\hline\n\\end{tabular}"
+                        
+                        # Convert to Markdown table
+                        markdown_table = ocr.convert_latex_to_markdown_table(latex_table)
+                        f.write(markdown_table)
+                        f.write("\n")
             
             print(f"\nResults saved to: {args.output}")
 
